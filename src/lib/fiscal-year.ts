@@ -3,6 +3,7 @@
 export interface FiscalConfig {
   fiscalYearStartMonth: number; // 1-12 (1 = January)
   sprintLengthWeeks: number; // 2, 3, or 4 weeks
+  theme: 'cool' | 'corporate'; // Theme selection
 }
 
 export interface FiscalPeriod {

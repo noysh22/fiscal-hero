@@ -8,7 +8,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Cyberpunk Dark Theme */
+    /* I'm Cool Theme - Cyberpunk */
     --background: 240 12% 4%;
     --foreground: 180 100% 90%;
 
@@ -61,20 +61,65 @@ All colors MUST be HSL.
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  :root[data-theme="corporate"] {
+    /* Corporate Fluff Theme */
+    --background: 210 20% 98%;
+    --foreground: 210 10% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 210 10% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 10% 20%;
+
+    /* Corporate Blue */
+    --primary: 210 100% 35%;
+    --primary-foreground: 0 0% 98%;
+
+    /* Corporate Gray */  
+    --secondary: 210 5% 85%;
+    --secondary-foreground: 210 10% 20%;
+
+    --muted: 210 20% 95%;
+    --muted-foreground: 210 5% 50%;
+
+    /* Corporate Green */
+    --accent: 120 60% 40%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 210 15% 85%;
+    --input: 210 15% 95%;
+    --ring: 210 100% 35%;
+
+    /* Corporate Specific Colors */
+    --neon-cyan: 210 100% 35%;
+    --neon-purple: 210 100% 35%;
+    --neon-pink: 210 100% 35%;
+    --neon-green: 120 60% 40%;
+    --cyber-dark: 0 0% 100%;
+    --cyber-darker: 210 20% 98%;
+
+    /* Corporate Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(210 100% 35%), hsl(210 80% 45%));
+    --gradient-accent: linear-gradient(135deg, hsl(120 60% 40%), hsl(210 100% 35%));
+    --gradient-cyber: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 20% 98%));
+
+    /* Corporate Effects (subtle) */
+    --glow-cyan: 0 2px 8px hsl(210 100% 35% / 0.15);
+    --glow-purple: 0 2px 8px hsl(210 100% 35% / 0.15);
+    --glow-pink: 0 2px 8px hsl(210 100% 35% / 0.15);
   }
 
   .dark {

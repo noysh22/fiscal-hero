@@ -34,6 +34,11 @@ const sprintLengths = [
   { value: 4, label: '4 weeks' }
 ];
 
+const themes = [
+  { value: 'cool' as const, label: "I'm cool" },
+  { value: 'corporate' as const, label: 'Corporate fluff' }
+];
+
 export function ConfigPanel({ config, onConfigChange, isOpen, onToggle }: ConfigPanelProps) {
   const [tempConfig, setTempConfig] = useState(config);
 
@@ -122,6 +127,34 @@ export function ConfigPanel({ config, onConfigChange, isOpen, onToggle }: Config
                 </Select>
                 <p className="text-xs text-muted-foreground">
                   Duration of each sprint in weeks
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="theme" className="text-sm font-medium text-foreground">
+                  Theme
+                </Label>
+                <Select
+                  value={tempConfig.theme}
+                  onValueChange={(value) => setTempConfig({ ...tempConfig, theme: value as 'cool' | 'corporate' })}
+                >
+                  <SelectTrigger className="cyber-border">
+                    <SelectValue placeholder="Select theme" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border-border z-50">
+                    {themes.map((theme) => (
+                      <SelectItem 
+                        key={theme.value} 
+                        value={theme.value}
+                        className="text-popover-foreground hover:bg-accent"
+                      >
+                        {theme.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Visual appearance style
                 </p>
               </div>
 

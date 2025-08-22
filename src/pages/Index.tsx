@@ -6,7 +6,8 @@ import { FiscalConfig } from '@/lib/fiscal-year';
 const Index = () => {
   const [config, setConfig] = useState<FiscalConfig>({ 
     fiscalYearStartMonth: 7, // Default: July
-    sprintLengthWeeks: 2 // Default: 2 weeks
+    sprintLengthWeeks: 2, // Default: 2 weeks
+    theme: 'cool' // Default: I'm cool theme
   });
   const [isConfigOpen, setIsConfigOpen] = useState(false);
 
@@ -22,7 +23,14 @@ const Index = () => {
   const handleConfigChange = (newConfig: FiscalConfig) => {
     setConfig(newConfig);
     localStorage.setItem('fiscal-config', JSON.stringify(newConfig));
+    // Apply theme to document
+    document.documentElement.setAttribute('data-theme', newConfig.theme);
   };
+
+  // Apply initial theme
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', config.theme);
+  }, [config.theme]);
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
