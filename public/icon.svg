@@ -1,0 +1,9 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="256" height="256" fill="#0F0F1A"/>
+  <rect x="32" y="48" width="192" height="176" rx="16" fill="#1A1A2E" stroke="#00FFF7" stroke-width="4"/>
+  <line x1="32" y1="96" x2="224" y2="96" stroke="#00FFF7" stroke-width="4"/>
+  <circle cx="64" cy="72" r="8" fill="#FF00FF"/>
+  <circle cx="192" cy="72" r="8" fill="#FF00FF"/>
+  <text x="80" y="140" fill="#00FFF7" font-family="monospace" font-size="48" font-weight="bold">22</text>
+  <text x="80" y="200" fill="#FF00FF" font-family="monospace" font-size="20">AUG 2085</text>
+</svg>
