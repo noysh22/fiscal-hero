@@ -69,7 +69,7 @@ export function FiscalDisplay({ config }: FiscalDisplayProps) {
 
           {/* Current Time */}
           <div className="pt-6 border-t border-border/30">
-            <p className="text-xs text-muted-foreground tracking-widest uppercase mb-2">System Time</p>
+            <p className="text-xs text-muted-foreground tracking-widest uppercase mb-2">Time of day</p>
             <p className="font-mono text-lg text-secondary neon-glow-purple">
               {currentTime.toLocaleString('en-US', {
                 weekday: 'short',
@@ -78,7 +78,8 @@ export function FiscalDisplay({ config }: FiscalDisplayProps) {
                 day: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit',
-                second: '2-digit'
+                second: '2-digit',
+                timeZoneName: 'short'
               })}
             </p>
           </div>

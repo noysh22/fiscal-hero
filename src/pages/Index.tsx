@@ -5,8 +5,8 @@ import { FiscalConfig } from '@/lib/fiscal-year';
 
 const Index = () => {
   const [config, setConfig] = useState<FiscalConfig>({ 
-    fiscalYearStartMonth: 7, // Default: July
-    sprintLengthWeeks: 2, // Default: 2 weeks
+    fiscalYearStartMonth: 8, // Default: August
+    sprintLengthWeeks: 3, // Default: 3 weeks
     theme: 'cool' // Default: I'm cool theme
   });
   const [isConfigOpen, setIsConfigOpen] = useState(false);
@@ -15,7 +15,12 @@ const Index = () => {
   useEffect(() => {
     const savedConfig = localStorage.getItem('fiscal-config');
     if (savedConfig) {
-      setConfig(JSON.parse(savedConfig));
+      const parsedConfig = JSON.parse(savedConfig);
+      // Convert firstSprintDate string back to Date object if it exists
+      if (parsedConfig.firstSprintDate) {
+        parsedConfig.firstSprintDate = new Date(parsedConfig.firstSprintDate);
+      }
+      setConfig(parsedConfig);
     }
   }, []);
 

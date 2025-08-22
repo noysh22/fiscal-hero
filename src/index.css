@@ -85,8 +85,8 @@ All colors MUST be HSL.
     --primary: 210 100% 35%;
     --primary-foreground: 0 0% 98%;
 
-    /* Corporate Gray */  
-    --secondary: 210 5% 85%;
+    /* Corporate Gray */
+    --secondary: 210 15% 60%;
     --secondary-foreground: 210 10% 20%;
 
     --muted: 210 20% 95%;

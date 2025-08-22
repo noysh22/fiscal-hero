@@ -4,6 +4,7 @@ export interface FiscalConfig {
   fiscalYearStartMonth: number; // 1-12 (1 = January)
   sprintLengthWeeks: number; // 2, 3, or 4 weeks
   theme: 'cool' | 'corporate'; // Theme selection
+  firstSprintDate?: Date; // Optional: First sprint start date
 }
 
 export interface FiscalPeriod {
@@ -40,9 +41,24 @@ export const calculateFiscalPeriod = (config: FiscalConfig, date: Date = new Dat
   const quarter = Math.floor(fiscalMonth / 3) + 1;
   
   // Calculate sprint within quarter based on configurable sprint length
-  const dayOfMonth = date.getDate();
-  const weeksIntoQuarter = Math.floor((fiscalMonth % 3) * 4.33 + (dayOfMonth - 1) / 7);
-  const sprint = Math.floor(weeksIntoQuarter / config.sprintLengthWeeks) + 1;
+  let sprint: number;
+
+  if (config.firstSprintDate) {
+    // Use the configured first sprint date for more accurate calculations
+    const firstSprintDate = new Date(config.firstSprintDate);
+    const daysDifference = Math.floor((date.getTime() - firstSprintDate.getTime()) / (1000 * 60 * 60 * 24));
+    const weeksDifference = Math.floor(daysDifference / 7);
+    const totalSprintsSinceStart = Math.floor(weeksDifference / config.sprintLengthWeeks);
+
+    // Calculate which sprint within the current quarter
+    const sprintsPerQuarter = Math.floor(13 / config.sprintLengthWeeks);
+    sprint = (totalSprintsSinceStart % sprintsPerQuarter) + 1;
+  } else {
+    // Fallback to the original calculation method
+    const dayOfMonth = date.getDate();
+    const weeksIntoQuarter = Math.floor((fiscalMonth % 3) * 4.33 + (dayOfMonth - 1) / 7);
+    sprint = Math.floor(weeksIntoQuarter / config.sprintLengthWeeks) + 1;
+  }
   
   // Calculate max sprints per quarter based on sprint length
   const maxSprintsPerQuarter = Math.floor(13 / config.sprintLengthWeeks); // ~13 weeks per quarter
@@ -51,7 +67,7 @@ export const calculateFiscalPeriod = (config: FiscalConfig, date: Date = new Dat
     fiscalYear,
     quarter,
     sprint: Math.min(sprint, maxSprintsPerQuarter),
-    displayYear: `FY${fiscalYear}Q${quarter}`,
+    displayYear: `FY${fiscalYear} Q${quarter}`,
     sprintCode: `${fiscalYear}.${quarter}.${Math.min(sprint, maxSprintsPerQuarter)}`
   };
 };

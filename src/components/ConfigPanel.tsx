@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Settings, Calendar } from 'lucide-react';
 import { FiscalConfig } from '@/lib/fiscal-year';
 
@@ -115,8 +116,8 @@ export function ConfigPanel({ config, onConfigChange, isOpen, onToggle }: Config
                   </SelectTrigger>
                   <SelectContent className="bg-popover border-border z-50">
                     {sprintLengths.map((length) => (
-                      <SelectItem 
-                        key={length.value} 
+                      <SelectItem
+                        key={length.value}
                         value={length.value.toString()}
                         className="text-popover-foreground hover:bg-accent"
                       >
@@ -127,6 +128,22 @@ export function ConfigPanel({ config, onConfigChange, isOpen, onToggle }: Config
                 </Select>
                 <p className="text-xs text-muted-foreground">
                   Duration of each sprint in weeks
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="first-sprint-date" className="text-sm font-medium text-foreground">
+                  First Sprint Date
+                </Label>
+                <DatePicker
+                  date={tempConfig.firstSprintDate}
+                  onDateChange={(date) => setTempConfig({ ...tempConfig, firstSprintDate: date })}
+                  placeholder="Select first sprint start date"
+                  fromMonth={new Date(new Date().getFullYear(), tempConfig.fiscalYearStartMonth - 1, 1)}
+                  toMonth={new Date(new Date().getFullYear() + 1, tempConfig.fiscalYearStartMonth + 2, 0)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Starting date of the first sprint in the fiscal year
                 </p>
               </div>
 
@@ -163,9 +180,14 @@ export function ConfigPanel({ config, onConfigChange, isOpen, onToggle }: Config
                 <p className="text-xs text-muted-foreground mb-2">
                   Fiscal year starting in <span className="text-primary">{months.find(m => m.value === tempConfig.fiscalYearStartMonth)?.label}</span>
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground mb-2">
                   Sprint length of <span className="text-primary">{tempConfig.sprintLengthWeeks} weeks</span> = ~{Math.floor(13 / tempConfig.sprintLengthWeeks)} sprints per quarter
                 </p>
+                {tempConfig.firstSprintDate && (
+                  <p className="text-xs text-muted-foreground">
+                    First sprint starts on <span className="text-primary">{tempConfig.firstSprintDate.toLocaleDateString()}</span>
+                  </p>
+                )}
               </div>
             </div>
 
