@@ -4,7 +4,10 @@ import { ConfigPanel } from '@/components/ConfigPanel';
 import { FiscalConfig } from '@/lib/fiscal-year';
 
 const Index = () => {
-  const [config, setConfig] = useState<FiscalConfig>({ fiscalYearStartMonth: 7 }); // Default: July
+  const [config, setConfig] = useState<FiscalConfig>({ 
+    fiscalYearStartMonth: 7, // Default: July
+    sprintLengthWeeks: 2 // Default: 2 weeks
+  });
   const [isConfigOpen, setIsConfigOpen] = useState(false);
 
   // Load config from localStorage on mount

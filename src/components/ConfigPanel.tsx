@@ -28,6 +28,12 @@ const months = [
   { value: 12, label: 'December' }
 ];
 
+const sprintLengths = [
+  { value: 2, label: '2 weeks' },
+  { value: 3, label: '3 weeks' },
+  { value: 4, label: '4 weeks' }
+];
+
 export function ConfigPanel({ config, onConfigChange, isOpen, onToggle }: ConfigPanelProps) {
   const [tempConfig, setTempConfig] = useState(config);
 
@@ -69,12 +75,12 @@ export function ConfigPanel({ config, onConfigChange, isOpen, onToggle }: Config
                 </Label>
                 <Select
                   value={tempConfig.fiscalYearStartMonth.toString()}
-                  onValueChange={(value) => setTempConfig({ fiscalYearStartMonth: parseInt(value) })}
+                  onValueChange={(value) => setTempConfig({ ...tempConfig, fiscalYearStartMonth: parseInt(value) })}
                 >
                   <SelectTrigger className="cyber-border">
                     <SelectValue placeholder="Select month" />
                   </SelectTrigger>
-                  <SelectContent className="bg-popover border-border">
+                  <SelectContent className="bg-popover border-border z-50">
                     {months.map((month) => (
                       <SelectItem 
                         key={month.value} 
@@ -91,11 +97,41 @@ export function ConfigPanel({ config, onConfigChange, isOpen, onToggle }: Config
                 </p>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="sprint-length" className="text-sm font-medium text-foreground">
+                  Sprint Length
+                </Label>
+                <Select
+                  value={tempConfig.sprintLengthWeeks.toString()}
+                  onValueChange={(value) => setTempConfig({ ...tempConfig, sprintLengthWeeks: parseInt(value) })}
+                >
+                  <SelectTrigger className="cyber-border">
+                    <SelectValue placeholder="Select sprint length" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border-border z-50">
+                    {sprintLengths.map((length) => (
+                      <SelectItem 
+                        key={length.value} 
+                        value={length.value.toString()}
+                        className="text-popover-foreground hover:bg-accent"
+                      >
+                        {length.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Duration of each sprint in weeks
+                </p>
+              </div>
+
               <div className="bg-muted/20 p-4 rounded-lg cyber-border">
                 <h3 className="text-sm font-medium text-secondary mb-2">Preview</h3>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Fiscal year starting in <span className="text-primary">{months.find(m => m.value === tempConfig.fiscalYearStartMonth)?.label}</span>
+                </p>
                 <p className="text-xs text-muted-foreground">
-                  Fiscal year starting in {months.find(m => m.value === tempConfig.fiscalYearStartMonth)?.label} will 
-                  affect quarter calculations and sprint numbering.
+                  Sprint length of <span className="text-primary">{tempConfig.sprintLengthWeeks} weeks</span> = ~{Math.floor(13 / tempConfig.sprintLengthWeeks)} sprints per quarter
                 </p>
               </div>
             </div>

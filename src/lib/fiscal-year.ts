@@ -2,6 +2,7 @@
 
 export interface FiscalConfig {
   fiscalYearStartMonth: number; // 1-12 (1 = January)
+  sprintLengthWeeks: number; // 2, 3, or 4 weeks
 }
 
 export interface FiscalPeriod {
@@ -37,17 +38,20 @@ export const calculateFiscalPeriod = (config: FiscalConfig, date: Date = new Dat
   // Calculate quarter (1-4)
   const quarter = Math.floor(fiscalMonth / 3) + 1;
   
-  // Calculate sprint within quarter (1-6, assuming 2-week sprints in 3-month quarters)
+  // Calculate sprint within quarter based on configurable sprint length
   const dayOfMonth = date.getDate();
   const weeksIntoQuarter = Math.floor((fiscalMonth % 3) * 4.33 + (dayOfMonth - 1) / 7);
-  const sprint = Math.floor(weeksIntoQuarter / 2) + 1;
+  const sprint = Math.floor(weeksIntoQuarter / config.sprintLengthWeeks) + 1;
+  
+  // Calculate max sprints per quarter based on sprint length
+  const maxSprintsPerQuarter = Math.floor(13 / config.sprintLengthWeeks); // ~13 weeks per quarter
   
   return {
     fiscalYear,
     quarter,
-    sprint: Math.min(sprint, 6), // Cap at 6 sprints per quarter
+    sprint: Math.min(sprint, maxSprintsPerQuarter),
     displayYear: `FY${fiscalYear}Q${quarter}`,
-    sprintCode: `${fiscalYear}.${quarter}.${Math.min(sprint, 6)}`
+    sprintCode: `${fiscalYear}.${quarter}.${Math.min(sprint, maxSprintsPerQuarter)}`
   };
 };
 
