@@ -8,7 +8,7 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview --strictPort --open /cyber-fiscal-flux/",
+    "preview": "vite preview --strictPort --open /fiscal-hero/",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "postbuild": "node scripts/after-build.cjs"
