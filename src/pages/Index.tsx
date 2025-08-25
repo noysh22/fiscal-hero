@@ -4,8 +4,8 @@ import { ConfigPanel } from '@/components/ConfigPanel';
 import { FiscalConfig } from '@/lib/fiscal-year';
 
 const Index = () => {
-  const [config, setConfig] = useState<FiscalConfig>({ 
-    fiscalYearStartMonth: 8, // Default: August
+  const [config, setConfig] = useState<FiscalConfig>({
+    fiscalYearStartDate: new Date(new Date().getFullYear(), 6, 28), // Default: July 28th of current year
     sprintLengthWeeks: 3, // Default: 3 weeks
     theme: 'cool' // Default: I'm cool theme
   });
@@ -16,7 +16,10 @@ const Index = () => {
     const savedConfig = localStorage.getItem('fiscal-config');
     if (savedConfig) {
       const parsedConfig = JSON.parse(savedConfig);
-      // Convert firstSprintDate string back to Date object if it exists
+      // Convert date strings back to Date objects
+      if (parsedConfig.fiscalYearStartDate) {
+        parsedConfig.fiscalYearStartDate = new Date(parsedConfig.fiscalYearStartDate);
+      }
       if (parsedConfig.firstSprintDate) {
         parsedConfig.firstSprintDate = new Date(parsedConfig.firstSprintDate);
       }

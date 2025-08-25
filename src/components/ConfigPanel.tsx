@@ -14,21 +14,6 @@ interface ConfigPanelProps {
   onToggle: () => void;
 }
 
-const months = [
-  { value: 1, label: 'January' },
-  { value: 2, label: 'February' },
-  { value: 3, label: 'March' },
-  { value: 4, label: 'April' },
-  { value: 5, label: 'May' },
-  { value: 6, label: 'June' },
-  { value: 7, label: 'July' },
-  { value: 8, label: 'August' },
-  { value: 9, label: 'September' },
-  { value: 10, label: 'October' },
-  { value: 11, label: 'November' },
-  { value: 12, label: 'December' }
-];
-
 const sprintLengths = [
   { value: 2, label: '2 weeks' },
   { value: 3, label: '3 weeks' },
@@ -77,29 +62,22 @@ export function ConfigPanel({ config, onConfigChange, isOpen, onToggle }: Config
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="fiscal-start" className="text-sm font-medium text-foreground">
-                  Fiscal Year Start Month
+                  Fiscal Year Start Date
                 </Label>
-                <Select
-                  value={tempConfig.fiscalYearStartMonth.toString()}
-                  onValueChange={(value) => setTempConfig({ ...tempConfig, fiscalYearStartMonth: parseInt(value) })}
-                >
-                  <SelectTrigger className="cyber-border">
-                    <SelectValue placeholder="Select month" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border-border z-50">
-                    {months.map((month) => (
-                      <SelectItem 
-                        key={month.value} 
-                        value={month.value.toString()}
-                        className="text-popover-foreground hover:bg-accent"
-                      >
-                        {month.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <DatePicker
+                  date={tempConfig.fiscalYearStartDate}
+                  onDateChange={(date) => {
+                    if (date) {
+                      // Always use current year for the fiscal year start date
+                      const currentYear = new Date().getFullYear();
+                      const newDate = new Date(currentYear, date.getMonth(), date.getDate());
+                      setTempConfig({ ...tempConfig, fiscalYearStartDate: newDate });
+                    }
+                  }}
+                  placeholder="Select fiscal year start date"
+                />
                 <p className="text-xs text-muted-foreground">
-                  The month when your fiscal year begins
+                  The first day of your fiscal year (year will default to current year)
                 </p>
               </div>
 
@@ -139,8 +117,8 @@ export function ConfigPanel({ config, onConfigChange, isOpen, onToggle }: Config
                   date={tempConfig.firstSprintDate}
                   onDateChange={(date) => setTempConfig({ ...tempConfig, firstSprintDate: date })}
                   placeholder="Select first sprint start date"
-                  fromMonth={new Date(new Date().getFullYear(), tempConfig.fiscalYearStartMonth - 1, 1)}
-                  toMonth={new Date(new Date().getFullYear() + 1, tempConfig.fiscalYearStartMonth + 2, 0)}
+                  fromMonth={new Date(tempConfig.fiscalYearStartDate.getFullYear(), tempConfig.fiscalYearStartDate.getMonth(), 1)}
+                  toMonth={new Date(tempConfig.fiscalYearStartDate.getFullYear() + 1, tempConfig.fiscalYearStartDate.getMonth() + 3, 0)}
                 />
                 <p className="text-xs text-muted-foreground">
                   Starting date of the first sprint in the fiscal year
@@ -178,14 +156,14 @@ export function ConfigPanel({ config, onConfigChange, isOpen, onToggle }: Config
               <div className="bg-muted/20 p-4 rounded-lg cyber-border">
                 <h3 className="text-sm font-medium text-secondary mb-2">Preview</h3>
                 <p className="text-xs text-muted-foreground mb-2">
-                  Fiscal year starting in <span className="text-primary">{months.find(m => m.value === tempConfig.fiscalYearStartMonth)?.label}</span>
+                  Fiscal year starting on <span className="text-primary">{tempConfig.fiscalYearStartDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</span>
                 </p>
                 <p className="text-xs text-muted-foreground mb-2">
                   Sprint length of <span className="text-primary">{tempConfig.sprintLengthWeeks} weeks</span> = ~{Math.floor(13 / tempConfig.sprintLengthWeeks)} sprints per quarter
                 </p>
                 {tempConfig.firstSprintDate && (
                   <p className="text-xs text-muted-foreground">
-                    First sprint starts on <span className="text-primary">{tempConfig.firstSprintDate.toLocaleDateString()}</span>
+                    First sprint starts on <span className="text-primary">{tempConfig.firstSprintDate.toLocaleDateString('en-GB')}</span>
                   </p>
                 )}
               </div>

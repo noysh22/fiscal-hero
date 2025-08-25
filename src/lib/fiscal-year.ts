@@ -1,7 +1,7 @@
 // Fiscal year calculation utilities
 
 export interface FiscalConfig {
-  fiscalYearStartMonth: number; // 1-12 (1 = January)
+  fiscalYearStartDate: Date; // First day of the fiscal year
   sprintLengthWeeks: number; // 2, 3, or 4 weeks
   theme: 'cool' | 'corporate'; // Theme selection
   firstSprintDate?: Date; // Optional: First sprint start date
@@ -16,30 +16,31 @@ export interface FiscalPeriod {
 }
 
 export const calculateFiscalPeriod = (config: FiscalConfig, date: Date = new Date()): FiscalPeriod => {
-  const currentMonth = date.getMonth() + 1; // 1-12
-  const currentYear = date.getFullYear();
-  
-  // Determine fiscal year
+  const fiscalStartDate = new Date(config.fiscalYearStartDate);
+  const currentDate = new Date(date);
+
+  // Determine which fiscal year we're in
   let fiscalYear: number;
-  if (currentMonth >= config.fiscalYearStartMonth) {
-    // We're in the fiscal year that started in the current calendar year
-    fiscalYear = currentYear + 1;
+  let fiscalYearStartDate: Date;
+
+  // Check if we're in the current fiscal year or the next one
+  const currentYearStart = new Date(currentDate.getFullYear(), fiscalStartDate.getMonth(), fiscalStartDate.getDate());
+
+  if (currentDate >= currentYearStart) {
+    fiscalYear = currentDate.getFullYear() + 1;
+    fiscalYearStartDate = currentYearStart;
   } else {
-    // We're in the fiscal year that started in the previous calendar year
-    fiscalYear = currentYear;
+    fiscalYear = currentDate.getFullYear();
+    fiscalYearStartDate = new Date(currentDate.getFullYear() - 1, fiscalStartDate.getMonth(), fiscalStartDate.getDate());
   }
-  
-  // Calculate which month of the fiscal year we're in (0-11)
-  let fiscalMonth: number;
-  if (currentMonth >= config.fiscalYearStartMonth) {
-    fiscalMonth = currentMonth - config.fiscalYearStartMonth;
-  } else {
-    fiscalMonth = 12 - config.fiscalYearStartMonth + currentMonth;
-  }
-  
-  // Calculate quarter (1-4)
-  const quarter = Math.floor(fiscalMonth / 3) + 1;
-  
+
+  // Calculate days since fiscal year start
+  const daysSinceFiscalStart = Math.floor((currentDate.getTime() - fiscalYearStartDate.getTime()) / (1000 * 60 * 60 * 24));
+
+  // Calculate quarter (1-4) - each quarter is approximately 91.25 days (365/4)
+  // Ensure we handle negative days (before fiscal year start) properly
+  const quarter = daysSinceFiscalStart < 0 ? 1 : Math.min(Math.floor(daysSinceFiscalStart / 91.25) + 1, 4);
+
   // Calculate sprint within quarter based on configurable sprint length
   let sprint: number;
 
@@ -54,15 +55,16 @@ export const calculateFiscalPeriod = (config: FiscalConfig, date: Date = new Dat
     const sprintsPerQuarter = Math.floor(13 / config.sprintLengthWeeks);
     sprint = (totalSprintsSinceStart % sprintsPerQuarter) + 1;
   } else {
-    // Fallback to the original calculation method
-    const dayOfMonth = date.getDate();
-    const weeksIntoQuarter = Math.floor((fiscalMonth % 3) * 4.33 + (dayOfMonth - 1) / 7);
-    sprint = Math.floor(weeksIntoQuarter / config.sprintLengthWeeks) + 1;
+    // Calculate sprint based on weeks since quarter start
+    const quarterStartDay = (quarter - 1) * 91.25;
+    const daysIntoQuarter = Math.max(0, daysSinceFiscalStart - quarterStartDay);
+    const weeksIntoQuarter = Math.floor(daysIntoQuarter / 7);
+    sprint = Math.max(1, Math.floor(weeksIntoQuarter / config.sprintLengthWeeks) + 1);
   }
-  
+
   // Calculate max sprints per quarter based on sprint length
   const maxSprintsPerQuarter = Math.floor(13 / config.sprintLengthWeeks); // ~13 weeks per quarter
-  
+
   return {
     fiscalYear,
     quarter,
@@ -73,18 +75,99 @@ export const calculateFiscalPeriod = (config: FiscalConfig, date: Date = new Dat
 };
 
 export const getQuarterProgress = (config: FiscalConfig, date: Date = new Date()): number => {
-  const currentMonth = date.getMonth() + 1;
-  let fiscalMonth: number;
-  
-  if (currentMonth >= config.fiscalYearStartMonth) {
-    fiscalMonth = currentMonth - config.fiscalYearStartMonth;
+  const fiscalStartDate = new Date(config.fiscalYearStartDate);
+  const currentDate = new Date(date);
+
+  // Determine which fiscal year we're in
+  let fiscalYearStartDate: Date;
+
+  // Check if we're in the current fiscal year or the next one
+  const currentYearStart = new Date(currentDate.getFullYear(), fiscalStartDate.getMonth(), fiscalStartDate.getDate());
+
+  if (currentDate >= currentYearStart) {
+    fiscalYearStartDate = currentYearStart;
   } else {
-    fiscalMonth = 12 - config.fiscalYearStartMonth + currentMonth;
+    fiscalYearStartDate = new Date(currentDate.getFullYear() - 1, fiscalStartDate.getMonth(), fiscalStartDate.getDate());
   }
-  
-  const monthInQuarter = fiscalMonth % 3;
-  const dayOfMonth = date.getDate();
-  const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  
-  return (monthInQuarter + dayOfMonth / daysInMonth) / 3;
+
+  // Calculate days since fiscal year start
+  const daysSinceFiscalStart = Math.floor((currentDate.getTime() - fiscalYearStartDate.getTime()) / (1000 * 60 * 60 * 24));
+
+  // Calculate which quarter we're in and progress within that quarter
+  // Handle negative days (before fiscal year start) properly
+  const quarter = daysSinceFiscalStart < 0 ? 1 : Math.min(Math.floor(daysSinceFiscalStart / 91.25) + 1, 4);
+  const quarterStartDay = (quarter - 1) * 91.25;
+  const daysIntoQuarter = Math.max(0, daysSinceFiscalStart - quarterStartDay);
+
+  // Return progress as a fraction (0-1)
+  return Math.min(Math.max(0, daysIntoQuarter / 91.25), 1);
+};
+
+export interface QuarterInfo {
+  quarter: number;
+  startDate: Date;
+  endDate: Date;
+  displayText: string;
+}
+
+export const getAllQuarters = (config: FiscalConfig, date: Date = new Date()): QuarterInfo[] => {
+  const fiscalStartDate = new Date(config.fiscalYearStartDate);
+  const currentDate = new Date(date);
+
+  // Determine which fiscal year we're in
+  let fiscalYear: number;
+  let fiscalYearStartDate: Date;
+
+  // Check if we're in the current fiscal year or the next one
+  const currentYearStart = new Date(currentDate.getFullYear(), fiscalStartDate.getMonth(), fiscalStartDate.getDate());
+
+  if (currentDate >= currentYearStart) {
+    fiscalYear = currentDate.getFullYear() + 1;
+    fiscalYearStartDate = currentYearStart;
+  } else {
+    fiscalYear = currentDate.getFullYear();
+    fiscalYearStartDate = new Date(currentDate.getFullYear() - 1, fiscalStartDate.getMonth(), fiscalStartDate.getDate());
+  }
+
+  const quarters: QuarterInfo[] = [];
+
+  for (let quarter = 1; quarter <= 4; quarter++) {
+    // Calculate quarter start date (each quarter is approximately 91.25 days)
+    const quarterStartDays = (quarter - 1) * 91.25;
+    const startDate = new Date(fiscalYearStartDate.getTime() + quarterStartDays * 24 * 60 * 60 * 1000);
+
+    // Calculate quarter end date (day before next quarter starts, or end of fiscal year for Q4)
+    let endDate: Date;
+    if (quarter === 4) {
+      // Q4 ends on the day before next fiscal year starts
+      const nextFiscalYearStart = new Date(fiscalYearStartDate.getFullYear() + 1, fiscalYearStartDate.getMonth(), fiscalYearStartDate.getDate());
+      endDate = new Date(nextFiscalYearStart.getTime() - 24 * 60 * 60 * 1000);
+    } else {
+      // Other quarters end the day before next quarter starts
+      const nextQuarterStartDays = quarter * 91.25;
+      endDate = new Date(fiscalYearStartDate.getTime() + (nextQuarterStartDays - 1) * 24 * 60 * 60 * 1000);
+    }
+
+    // Format display text in the requested format: Q1FY25 – July 28, 2024 – October 26, 2024
+    const fiscalYearShort = fiscalYear.toString().slice(-2); // Get last 2 digits of fiscal year
+    const startDateStr = startDate.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+    const endDateStr = endDate.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+
+    quarters.push({
+      quarter,
+      startDate,
+      endDate,
+      displayText: `Q${quarter} FY${fiscalYearShort} – ${startDateStr} – ${endDateStr}`
+    });
+  }
+
+  return quarters;
 };

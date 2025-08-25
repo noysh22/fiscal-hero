@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { calculateFiscalPeriod, getQuarterProgress, FiscalConfig, FiscalPeriod } from '@/lib/fiscal-year';
+import { calculateFiscalPeriod, getQuarterProgress, getAllQuarters, FiscalConfig, FiscalPeriod, QuarterInfo } from '@/lib/fiscal-year';
 
 interface FiscalDisplayProps {
   config: FiscalConfig;
@@ -10,6 +10,7 @@ export function FiscalDisplay({ config }: FiscalDisplayProps) {
   const [fiscalData, setFiscalData] = useState<FiscalPeriod | null>(null);
   const [quarterProgress, setQuarterProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [quarters, setQuarters] = useState<QuarterInfo[]>([]);
 
   useEffect(() => {
     const updateData = () => {
@@ -17,6 +18,7 @@ export function FiscalDisplay({ config }: FiscalDisplayProps) {
       setCurrentTime(now);
       setFiscalData(calculateFiscalPeriod(config, now));
       setQuarterProgress(getQuarterProgress(config, now));
+      setQuarters(getAllQuarters(config, now));
     };
 
     updateData();
@@ -56,7 +58,7 @@ export function FiscalDisplay({ config }: FiscalDisplayProps) {
             <p className="text-sm text-muted-foreground tracking-widest uppercase">Quarter Progress</p>
             <div className="relative w-full max-w-md mx-auto">
               <div className="h-2 bg-muted rounded-full overflow-hidden cyber-border">
-                <div 
+                <div
                   className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-1000 ease-out"
                   style={{ width: `${quarterProgress * 100}%` }}
                 ></div>
@@ -64,6 +66,25 @@ export function FiscalDisplay({ config }: FiscalDisplayProps) {
               <p className="text-xs text-center mt-2 font-mono">
                 {(quarterProgress * 100).toFixed(1)}% Complete
               </p>
+            </div>
+          </div>
+
+          {/* Quarters List */}
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground tracking-widest uppercase">Fiscal Year Quarters</p>
+            <div className="space-y-2 max-w-lg mx-auto">
+              {quarters.map((quarter) => (
+                <div
+                  key={quarter.quarter}
+                  className={`text-xs font-mono px-3 py-2 rounded cyber-border transition-all duration-300 ${
+                    fiscalData?.quarter === quarter.quarter
+                      ? 'bg-primary/20 text-primary border-primary/50 neon-glow-subtle'
+                      : 'bg-muted/30 text-muted-foreground border-border/30'
+                  }`}
+                >
+                  {quarter.displayText}
+                </div>
+              ))}
             </div>
           </div>
 
