@@ -16,7 +16,10 @@ export interface FiscalPeriod {
 }
 
 export const calculateFiscalPeriod = (config: FiscalConfig, date: Date = new Date()): FiscalPeriod => {
-  const fiscalStartDate = new Date(config.fiscalYearStartDate);
+  // Ensure we have a valid fiscal year start date
+  const fiscalStartDate = config.fiscalYearStartDate && !isNaN(config.fiscalYearStartDate.getTime())
+    ? new Date(config.fiscalYearStartDate)
+    : new Date(new Date().getFullYear(), 6, 28); // Default to July 28th
   const currentDate = new Date(date);
 
   // Determine which fiscal year we're in
@@ -75,7 +78,10 @@ export const calculateFiscalPeriod = (config: FiscalConfig, date: Date = new Dat
 };
 
 export const getQuarterProgress = (config: FiscalConfig, date: Date = new Date()): number => {
-  const fiscalStartDate = new Date(config.fiscalYearStartDate);
+  // Ensure we have a valid fiscal year start date
+  const fiscalStartDate = config.fiscalYearStartDate && !isNaN(config.fiscalYearStartDate.getTime())
+    ? new Date(config.fiscalYearStartDate)
+    : new Date(new Date().getFullYear(), 6, 28); // Default to July 28th
   const currentDate = new Date(date);
 
   // Determine which fiscal year we're in
@@ -111,7 +117,10 @@ export interface QuarterInfo {
 }
 
 export const getAllQuarters = (config: FiscalConfig, date: Date = new Date()): QuarterInfo[] => {
-  const fiscalStartDate = new Date(config.fiscalYearStartDate);
+  // Ensure we have a valid fiscal year start date
+  const fiscalStartDate = config.fiscalYearStartDate && !isNaN(config.fiscalYearStartDate.getTime())
+    ? new Date(config.fiscalYearStartDate)
+    : new Date(new Date().getFullYear(), 6, 28); // Default to July 28th
   const currentDate = new Date(date);
 
   // Determine which fiscal year we're in

@@ -15,15 +15,50 @@ const Index = () => {
   useEffect(() => {
     const savedConfig = localStorage.getItem('fiscal-config');
     if (savedConfig) {
-      const parsedConfig = JSON.parse(savedConfig);
-      // Convert date strings back to Date objects
-      if (parsedConfig.fiscalYearStartDate) {
-        parsedConfig.fiscalYearStartDate = new Date(parsedConfig.fiscalYearStartDate);
+      try {
+        const parsedConfig = JSON.parse(savedConfig);
+
+        // Migration: Handle old fiscalYearStartMonth format
+        if (parsedConfig.fiscalYearStartMonth && !parsedConfig.fiscalYearStartDate) {
+          // Convert old month-based config to date-based config
+          const currentYear = new Date().getFullYear();
+          parsedConfig.fiscalYearStartDate = new Date(currentYear, parsedConfig.fiscalYearStartMonth - 1, 1);
+          delete parsedConfig.fiscalYearStartMonth; // Remove old property
+        }
+
+        // Convert date strings back to Date objects
+        if (parsedConfig.fiscalYearStartDate) {
+          parsedConfig.fiscalYearStartDate = new Date(parsedConfig.fiscalYearStartDate);
+          // Validate the date
+          if (isNaN(parsedConfig.fiscalYearStartDate.getTime())) {
+            parsedConfig.fiscalYearStartDate = new Date(new Date().getFullYear(), 6, 28); // Default to July 28th
+          }
+        } else {
+          // Ensure we always have a fiscal year start date
+          parsedConfig.fiscalYearStartDate = new Date(new Date().getFullYear(), 6, 28); // Default to July 28th
+        }
+
+        if (parsedConfig.firstSprintDate) {
+          parsedConfig.firstSprintDate = new Date(parsedConfig.firstSprintDate);
+          // Validate the date
+          if (isNaN(parsedConfig.firstSprintDate.getTime())) {
+            delete parsedConfig.firstSprintDate; // Remove invalid date
+          }
+        }
+
+        // Ensure all required properties exist with defaults
+        const validConfig: FiscalConfig = {
+          fiscalYearStartDate: parsedConfig.fiscalYearStartDate,
+          sprintLengthWeeks: parsedConfig.sprintLengthWeeks || 3,
+          theme: parsedConfig.theme || 'cool',
+          ...(parsedConfig.firstSprintDate && { firstSprintDate: parsedConfig.firstSprintDate })
+        };
+
+        setConfig(validConfig);
+      } catch (error) {
+        console.error('Error loading saved config:', error);
+        // If there's an error parsing, keep the default config
       }
-      if (parsedConfig.firstSprintDate) {
-        parsedConfig.firstSprintDate = new Date(parsedConfig.firstSprintDate);
-      }
-      setConfig(parsedConfig);
     }
   }, []);
 
