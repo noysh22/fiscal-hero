@@ -180,3 +180,105 @@ export const getAllQuarters = (config: FiscalConfig, date: Date = new Date()): Q
 
   return quarters;
 };
+
+export interface SprintDates {
+  startDate: Date;
+  endDate: Date;
+}
+
+export const getCurrentSprintDates = (config: FiscalConfig, date: Date = new Date()): SprintDates => {
+  const now = new Date(date);
+  const sprintLengthWeeks = Math.max(1, Math.floor(config.sprintLengthWeeks || 2));
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const SPRINT_MS = sprintLengthWeeks * 7 * DAY_MS;
+
+  // If first sprint date is provided, use it as the anchor for continuous sprints
+  if (config.firstSprintDate && !isNaN(new Date(config.firstSprintDate).getTime())) {
+    const first = new Date(config.firstSprintDate);
+    const msSinceFirst = now.getTime() - first.getTime();
+
+    if (msSinceFirst < 0) {
+      // Before first sprint starts, return the first sprint dates
+      return {
+        startDate: new Date(first),
+        endDate: new Date(first.getTime() + SPRINT_MS - DAY_MS)
+      };
+    }
+
+    const sprintIndex = Math.floor(msSinceFirst / SPRINT_MS);
+    const sprintStartMs = first.getTime() + sprintIndex * SPRINT_MS;
+    const sprintEndMs = sprintStartMs + SPRINT_MS - DAY_MS; // End of last day of sprint
+
+    return {
+      startDate: new Date(sprintStartMs),
+      endDate: new Date(sprintEndMs)
+    };
+  }
+
+  // Fallback: align to current quarter using the same fiscal/quarter math as other utilities
+  const fiscalStartDate = config.fiscalYearStartDate && !isNaN(config.fiscalYearStartDate.getTime())
+    ? new Date(config.fiscalYearStartDate)
+    : new Date(new Date().getFullYear(), 6, 28); // Default July 28th
+
+  const currentYearStart = new Date(now.getFullYear(), fiscalStartDate.getMonth(), fiscalStartDate.getDate());
+  const fiscalYearStartDate = now >= currentYearStart
+    ? currentYearStart
+    : new Date(now.getFullYear() - 1, fiscalStartDate.getMonth(), fiscalStartDate.getDate());
+
+  const msSinceFiscalStart = now.getTime() - fiscalYearStartDate.getTime();
+  const QUARTER_MS = 91.25 * DAY_MS;
+
+  const quarter = msSinceFiscalStart < 0 ? 1 : Math.min(Math.floor(msSinceFiscalStart / QUARTER_MS) + 1, 4);
+  const quarterStartMs = fiscalYearStartDate.getTime() + (quarter - 1) * QUARTER_MS;
+
+  const msIntoQuarter = Math.max(0, now.getTime() - quarterStartMs);
+  const sprintIndexInQuarter = Math.floor(msIntoQuarter / SPRINT_MS);
+  const sprintStartMs = quarterStartMs + sprintIndexInQuarter * SPRINT_MS;
+  const sprintEndMs = sprintStartMs + SPRINT_MS - DAY_MS; // End of last day of sprint
+
+  return {
+    startDate: new Date(sprintStartMs),
+    endDate: new Date(sprintEndMs)
+  };
+};
+
+export const getSprintProgress = (config: FiscalConfig, date: Date = new Date()): number => {
+  const now = new Date(date);
+  const sprintLengthWeeks = Math.max(1, Math.floor(config.sprintLengthWeeks || 2));
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const SPRINT_MS = sprintLengthWeeks * 7 * DAY_MS;
+
+  // If first sprint date is provided, use it as the anchor for continuous sprints
+  if (config.firstSprintDate && !isNaN(new Date(config.firstSprintDate).getTime())) {
+    const first = new Date(config.firstSprintDate);
+    const msSinceFirst = now.getTime() - first.getTime();
+    if (msSinceFirst < 0) return 0; // before first sprint start
+    const sprintIndex = Math.floor(msSinceFirst / SPRINT_MS);
+    const sprintStartMs = first.getTime() + sprintIndex * SPRINT_MS;
+    const progress = (now.getTime() - sprintStartMs) / SPRINT_MS;
+    return Math.min(Math.max(progress, 0), 1);
+  }
+
+  // Fallback: align to current quarter using the same fiscal/quarter math as other utilities
+  const fiscalStartDate = config.fiscalYearStartDate && !isNaN(config.fiscalYearStartDate.getTime())
+    ? new Date(config.fiscalYearStartDate)
+    : new Date(new Date().getFullYear(), 6, 28); // Default July 28th
+
+  const currentYearStart = new Date(now.getFullYear(), fiscalStartDate.getMonth(), fiscalStartDate.getDate());
+  const fiscalYearStartDate = now >= currentYearStart
+    ? currentYearStart
+    : new Date(now.getFullYear() - 1, fiscalStartDate.getMonth(), fiscalStartDate.getDate());
+
+  const msSinceFiscalStart = now.getTime() - fiscalYearStartDate.getTime();
+  const QUARTER_MS = 91.25 * DAY_MS;
+
+  const quarter = msSinceFiscalStart < 0 ? 1 : Math.min(Math.floor(msSinceFiscalStart / QUARTER_MS) + 1, 4);
+  const quarterStartMs = fiscalYearStartDate.getTime() + (quarter - 1) * QUARTER_MS;
+
+  const msIntoQuarter = Math.max(0, now.getTime() - quarterStartMs);
+  const sprintIndexInQuarter = Math.floor(msIntoQuarter / SPRINT_MS);
+  const sprintStartMs = quarterStartMs + sprintIndexInQuarter * SPRINT_MS;
+
+  const progress = (now.getTime() - sprintStartMs) / SPRINT_MS;
+  return Math.min(Math.max(progress, 0), 1);
+};

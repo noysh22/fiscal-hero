@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { calculateFiscalPeriod, getQuarterProgress, getAllQuarters, FiscalConfig, FiscalPeriod, QuarterInfo } from '@/lib/fiscal-year';
+import { calculateFiscalPeriod, getQuarterProgress, getSprintProgress, getCurrentSprintDates, getAllQuarters, FiscalConfig, FiscalPeriod, QuarterInfo, SprintDates } from '@/lib/fiscal-year';
 
 interface FiscalDisplayProps {
   config: FiscalConfig;
@@ -9,6 +9,8 @@ interface FiscalDisplayProps {
 export function FiscalDisplay({ config }: FiscalDisplayProps) {
   const [fiscalData, setFiscalData] = useState<FiscalPeriod | null>(null);
   const [quarterProgress, setQuarterProgress] = useState(0);
+  const [sprintProgress, setSprintProgress] = useState(0);
+  const [sprintDates, setSprintDates] = useState<SprintDates | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [quarters, setQuarters] = useState<QuarterInfo[]>([]);
 
@@ -18,6 +20,8 @@ export function FiscalDisplay({ config }: FiscalDisplayProps) {
       setCurrentTime(now);
       setFiscalData(calculateFiscalPeriod(config, now));
       setQuarterProgress(getQuarterProgress(config, now));
+      setSprintProgress(getSprintProgress(config, now));
+      setSprintDates(getCurrentSprintDates(config, now));
       setQuarters(getAllQuarters(config, now));
     };
 
@@ -51,6 +55,19 @@ export function FiscalDisplay({ config }: FiscalDisplayProps) {
             <h2 className="text-2xl md:text-4xl font-mono text-primary neon-glow">
               {fiscalData.sprintCode}
             </h2>
+            {sprintDates && (
+              <p className="text-sm font-mono text-muted-foreground">
+                {sprintDates.startDate.toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric'
+                })} → {sprintDates.endDate.toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric'
+                })}
+              </p>
+            )}
           </div>
 
           {/* Quarter Progress Bar */}
@@ -65,6 +82,22 @@ export function FiscalDisplay({ config }: FiscalDisplayProps) {
               </div>
               <p className="text-xs text-center mt-2 font-mono">
                 {(quarterProgress * 100).toFixed(1)}% Complete
+              </p>
+            </div>
+          </div>
+
+          {/* Sprint Progress Bar */}
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground tracking-widest uppercase">Sprint Progress</p>
+            <div className="relative w-full max-w-md mx-auto">
+              <div className="h-2 bg-muted rounded-full overflow-hidden cyber-border">
+                <div
+                  className="h-full bg-gradient-to-r from-[hsl(var(--neon-green))] to-[hsl(var(--neon-cyan))] transition-all duration-1000 ease-out"
+                  style={{ width: `${sprintProgress * 100}%` }}
+                ></div>
+              </div>
+              <p className="text-xs text-center mt-2 font-mono">
+                {(sprintProgress * 100).toFixed(1)}% Complete
               </p>
             </div>
           </div>
